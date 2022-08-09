@@ -162,6 +162,10 @@ async function init() {
 			'icon-size': 160,
 			format: dmgFormat,
 			window: {
+				position: {
+					x: 500,
+					y: 400
+				},
 				size: {
 					width: cli.flags.width,
 					height: cli.flags.height
