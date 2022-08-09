@@ -20,9 +20,16 @@ const cli = meow(`
 	  $ create-dmg <app> [destination]
 
 	Options
-	  --overwrite          Overwrite existing DMG with the same name
-	  --identity=<value>   Manually set code signing identity (automatic by default)
-	  --dmg-title=<value>  Manually set DMG title (must be <=27 characters) [default: App name]
+	  --overwrite          		Overwrite existing DMG with the same name
+	  --identity=<value>   		Manually set code signing identity (automatic by default)
+	  --dmg-title=<value>  		Manually set DMG title (must be <=27 characters) [default: App name]
+		--background=<value>		Manually set background image (660x400) [.png]
+		--width=<value>					DMG width
+    --height=<value>				DMG height
+    --app-x=<value>					X-coordinate of the app icon
+    --app-y=<value>					Y-coordinate of the app icon
+    --folder-x=<value>			X-coordinate of the Applications folder icon
+    --folder-y=<value>			Y-coordinate of the Applications folder icon
 
 	Examples
 	  $ create-dmg 'Lungo.app'
@@ -37,7 +44,37 @@ const cli = meow(`
 		},
 		dmgTitle: {
 			type: 'string'
-		}
+		},
+		background: {
+			type: 'string'
+		},
+		file: {
+			type: 'string'
+		},
+		width: {
+			type: 'number',
+			default: 660
+		},
+		height: {
+			type: 'number',
+			default: 400
+		},
+		appX: {
+			type: 'number',
+			default: 180
+		},
+		appY: {
+			type: 'number',
+			default: 170
+		},
+		folderX: {
+			type: 'number',
+			default: 480
+		},
+		folderY: {
+			type: 'number',
+			default: 170
+		},
 	}
 });
 
@@ -86,6 +123,7 @@ async function init() {
 	const dmgTitle = cli.flags.dmgTitle || appName;
 	const dmgFilename = `${appName} ${appInfo.CFBundleShortVersionString}.dmg`;
 	const dmgPath = path.join(destinationPath, dmgFilename);
+	const backgroundImagePath = cli.flags.background || path.join(__dirname, 'assets/dmg-background.png');
 
 	if (dmgTitle > 27) {
 		ora.fail('The disk image title cannot exceed 27 characters. This is a limitation in a dependency: https://github.com/LinusU/node-alias/issues/7');
@@ -120,25 +158,25 @@ async function init() {
 			//
 			// Use transparent background and `background-color` option when this is fixed:
 			// https://github.com/LinusU/node-appdmg/issues/135
-			background: path.join(__dirname, 'assets/dmg-background.png'),
+			background: backgroundImagePath,
 			'icon-size': 160,
 			format: dmgFormat,
 			window: {
 				size: {
-					width: 660,
-					height: 400
+					width: cli.flags.width,
+					height: cli.flags.height
 				}
 			},
 			contents: [
 				{
-					x: 180,
-					y: 170,
+					x: cli.flags.appX,
+					y: cli.flags.appY,
 					type: 'file',
 					path: appPath
 				},
 				{
-					x: 480,
-					y: 170,
+					x: cli.flags.folderX,
+					y: cli.flags.folderY,
 					type: 'link',
 					path: '/Applications'
 				}
